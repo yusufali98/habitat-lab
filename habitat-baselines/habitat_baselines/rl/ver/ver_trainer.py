@@ -321,6 +321,8 @@ class VERTrainer(PPOTrainer):
             self.actor_critic.all_policy_tensors()
         )
 
+        logger.info("########################### Setting up VER inference workers....")
+
         self.inference_workers = [
             InferenceWorker(self.mp_ctx, i, *inference_worker_args)
             for i in range(1 if main_is_iw else 0, n_inference_workers)
@@ -339,6 +341,8 @@ class VERTrainer(PPOTrainer):
             self._inference_worker_impl.set_rollouts(self.rollouts)
         else:
             self._inference_worker_impl = None
+
+        logger.info("########################### Setup VER inference workers !")
 
         for iw in self.inference_workers:
             # We send the policy weights and the rollouts
@@ -370,12 +374,16 @@ class VERTrainer(PPOTrainer):
         [aw.start_experience_collection() for aw in self.environment_workers]
         self.report_worker.start_collection()
 
+        logger.info("########################### Collected VER experience through inference workers !")
+
         self.timer = Timing()
 
         self._all_workers.extend(self.environment_workers)
         self._all_workers.extend(self.inference_workers)
         self._all_workers.append(self.report_worker)
         self._all_workers.append(self.preemption_decider)
+
+        logger.info("########################### Exited VER initialiser !!")
 
     @profiling_wrapper.RangeContext("_update_agent")
     def _update_agent(self):

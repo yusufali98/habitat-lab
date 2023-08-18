@@ -60,6 +60,9 @@ def execute_exp(config: "DictConfig", run_type: str) -> None:
     config: Habitat.config
     runtype: str {train or eval}
     """
+
+    print("Entered execute exp....")
+    
     random.seed(config.habitat.seed)
     np.random.seed(config.habitat.seed)
     torch.manual_seed(config.habitat.seed)
@@ -69,6 +72,7 @@ def execute_exp(config: "DictConfig", run_type: str) -> None:
     ):
         torch.set_num_threads(1)
 
+    print("initialising trainer...")
     trainer_init = baseline_registry.get_trainer(
         config.habitat_baselines.trainer_name
     )
@@ -76,8 +80,10 @@ def execute_exp(config: "DictConfig", run_type: str) -> None:
         trainer_init is not None
     ), f"{config.habitat_baselines.trainer_name} is not supported"
     trainer = trainer_init(config)
+    print("trainer initialised !")
 
     if run_type == "train":
+        print("Entering trainer ....")
         trainer.train()
     elif run_type == "eval":
         trainer.eval()

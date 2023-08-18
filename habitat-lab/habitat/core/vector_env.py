@@ -256,6 +256,12 @@ class VectorEnv:
             while command != CLOSE_COMMAND:
                 if command == STEP_COMMAND:
                     observations, reward, done, info = env.step(data)
+
+                    # # NOTE: Temporary fix to avoid NaN rewards during training (Taken from VER trainer)
+                    # import math
+                    # if not math.isfinite(reward):
+                    #     reward = -1.0
+
                     if auto_reset_done and done:
                         observations = env.reset()
                     with profiling_wrapper.RangeContext(

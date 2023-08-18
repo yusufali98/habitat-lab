@@ -102,9 +102,12 @@ class Env:
             self._setup_episode_iterator()
             self.current_episode = next(self.episode_iterator)
             with read_write(self._config):
-                self._config.simulator.scene_dataset = (
-                    self.current_episode.scene_dataset_config
-                )
+                # self._config.simulator.scene_dataset = (
+                #     self.current_episode.scene_dataset_config
+                # )
+                # TODO: Hacky fix to get semantic annotations from HM3D - Override the path to scene_dataset json file
+                self._config.simulator.scene_dataset = "/srv/kira-lab/share4/yali30/habitat_datasets/hm3d_train_semantics/data/versioned_data/hm3d-0.2/hm3d/hm3d_annotated_basis.scene_dataset_config.json"
+
                 self._config.simulator.scene = self.current_episode.scene_id
 
             self.number_of_episodes = len(self.episodes)

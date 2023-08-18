@@ -204,6 +204,8 @@ class PPOTrainer(BaseRLTrainer):
         )
 
     def _init_train(self, resume_state=None):
+
+        print("Entered DDPPO trainer init func....")
         if resume_state is None:
             resume_state = load_resume_state(self.config)
 
@@ -216,6 +218,11 @@ class PPOTrainer(BaseRLTrainer):
             self._is_distributed = True
 
         self._add_preemption_signal_handlers()
+
+        print("checking for distribted...")
+
+        # NOTE: Force single GPU use for debugging
+        # self._is_distributed = False
 
         if self._is_distributed:
             local_rank, tcp_store = init_distrib_slurm(
@@ -246,7 +253,8 @@ class PPOTrainer(BaseRLTrainer):
                 "rollout_tracker", tcp_store
             )
             self.num_rollouts_done_store.set("num_done", "0")
-
+        
+        print("checked for distributed !")
         if rank0_only() and self.config.habitat_baselines.verbose:
             logger.info(f"config: {OmegaConf.to_yaml(self.config)}")
 
@@ -271,6 +279,7 @@ class PPOTrainer(BaseRLTrainer):
                         f"Removed metric {non_scalar_metric_root} from metrics since it cannot be used during training."
                     )
 
+        print("Initialising envs....")
         self._init_envs()
 
         action_space = self.envs.action_spaces[0]
@@ -351,7 +360,7 @@ class PPOTrainer(BaseRLTrainer):
                 batch[
                     PointNavResNetNet.PRETRAINED_VISUAL_FEATURES_KEY
                 ] = self._encoder(batch)
-
+        
         self.rollouts.buffers["observations"][0] = batch  # type: ignore
 
         self.current_episode_reward = torch.zeros(self.envs.num_envs, 1)
@@ -794,6 +803,7 @@ class PPOTrainer(BaseRLTrainer):
             else contextlib.suppress()
         ) as writer:
             while not self.is_done():
+                
                 profiling_wrapper.on_start_step()
                 profiling_wrapper.range_push("train update")
 
